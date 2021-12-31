@@ -1,37 +1,67 @@
 import * as fs from 'fs';
 
-const portfile: string = './.testing-app-e2e';
-const lockfile: string = portfile + '.lock';
+export const CONFIG_PATH = './.nestjs-msvc-e2e';
+export const LOCK_PATH = CONFIG_PATH + '.lock';
+const waitFor = 100;
 
-function lock(callback: CallableFunction): void {
-  if (fs.existsSync(lockfile)) {
-    setTimeout(() => lock(callback), 100);
+function lock(onAcquired: CallableFunction, waitTime = 1000): void {
+  if (waitTime <= 0) {
+    throw new Error('Timeout.');
+  }
+
+  if (fs.existsSync(LOCK_PATH)) {
+    setTimeout(() => lock(onAcquired, waitTime - waitFor), waitFor);
     return;
   }
 
-  fs.writeFileSync(lockfile, '');
-
-  callback();
-
-  fs.unlinkSync(lockfile);
+  fs.writeFileSync(LOCK_PATH, '');
+  onAcquired();
+  fs.unlinkSync(LOCK_PATH);
 }
 
-export function getNextPort(): Promise<number> {
-  if (!fs.existsSync(portfile)) {
-    setPort();
+function getPortConfig(): {} {
+  if (!fs.existsSync(CONFIG_PATH)) {
+    throw new Error(`Use setStartingPort before running this.`);
   }
 
-  return new Promise<number>(resolve => {
-    lock(() => {
-      const port: number = parseInt(fs.readFileSync(portfile).toString());
-
-      fs.writeFileSync(portfile, (port + 1).toString());
-
-      resolve(port);
-    });
-  });
+  return JSON.parse(fs.readFileSync(CONFIG_PATH).toString());
 }
 
-export function setPort(port: number = 1000) {
-  fs.writeFileSync(portfile, port.toString());
+function getPort(context: string) {
+  const config = getPortConfig();
+
+  return config[context];
+}
+
+function setPort(port: number, context: string = 'default') {
+  const config = getPortConfig();
+  config[context] = port;
+  
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config));
+}
+
+export function getNextPort(context: string = 'default'): Promise<number> {
+
+  return new Promise<number>((resolve, reject) => {
+    try {
+      lock(() => {
+        const port: number = getPort(context);
+        
+        setPort(port + 1, context);
+  
+        resolve(port);
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+
+}
+
+export function setStartingPort(port: number, context: string = 'default') {
+  if (fs.existsSync(LOCK_PATH)) {
+    fs.unlinkSync(LOCK_PATH);
+  }
+  
+  setPort(port, context);
 }
