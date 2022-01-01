@@ -1,10 +1,10 @@
 {
-  "name": "nestjs-microservice-e2e",
-  "version": "0.0.1",
-  "description": "",
+  "name": "nestjs-mcsv-e2e",
+  "version": "0.1.0",
+  "description": "Nestjs thread safe e2e testing app creator",
   "main": "src/index.ts",
   "author": "galdino.jesse@gmail.com",
-  "license": "ISC",
+  "license": "GPL-3.0-only",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch"

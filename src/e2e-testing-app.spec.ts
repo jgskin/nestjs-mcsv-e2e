@@ -21,7 +21,7 @@ describe('E2e testing app', () => {
 
   describe('E2eTestingApp', () => {
     it('.client can send a message to the server', async () => {
-      setStartingPort(1000);
+      setStartingPort(9100);
 
       const app = await create({ imports: [ FooModule ] });
       const res = await firstValueFrom(app.client.send('foo', {}));

@@ -1,16 +1,16 @@
 import * as fs from 'fs';
 
-export const CONFIG_PATH = './.nestjs-msvc-e2e';
+export const CONFIG_PATH = process.env.NM_E2E_FILEPATH || './.nestjs-msvc-e2e';
 export const LOCK_PATH = CONFIG_PATH + '.lock';
-const waitFor = 100;
+const waitTime = 100;
 
-function lock(onAcquired: CallableFunction, waitTime = 1000): void {
-  if (waitTime <= 0) {
+function lock(onAcquired: CallableFunction, maxWaitTime = 1000): void {
+  if (maxWaitTime <= 0) {
     throw new Error('Timeout.');
   }
 
   if (fs.existsSync(LOCK_PATH)) {
-    setTimeout(() => lock(onAcquired, waitTime - waitFor), waitFor);
+    setTimeout(() => lock(onAcquired, maxWaitTime - waitTime), waitTime);
     return;
   }
 
@@ -21,7 +21,7 @@ function lock(onAcquired: CallableFunction, waitTime = 1000): void {
 
 function getPortConfig(): {} {
   if (!fs.existsSync(CONFIG_PATH)) {
-    throw new Error(`Use setStartingPort before running this.`);
+    return {};
   }
 
   return JSON.parse(fs.readFileSync(CONFIG_PATH).toString());
@@ -29,6 +29,10 @@ function getPortConfig(): {} {
 
 function getPort(context: string) {
   const config = getPortConfig();
+
+  if (!config[context]) {
+    throw new Error(`Use setStartingPort before running this.`);
+  }
 
   return config[context];
 }

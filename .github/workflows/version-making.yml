@@ -1,0 +1,25 @@
+name: Version making
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js 16.13
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16.13'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run tests
+      run: NM_E2E_FILEPATH=$GITHUB_WORKSPACE/.nestjs-msvc-e2e npm test
