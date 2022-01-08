@@ -55,3 +55,10 @@ export class E2eTestingApp {
     this.client.close();
   }
 }
+
+export async function createTestingApp(moduleMetadata: ModuleMetadata = {}): Promise<E2eTestingApp> {
+  const app = new E2eTestingApp();
+  await app.init(moduleMetadata);
+
+  return app;
+}

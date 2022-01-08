@@ -1,7 +1,8 @@
 import { Controller, Module } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { create, setStartingPort } from '.';
+import { createTestingApp } from './e2e-testing-app';
+import { setStartingPort } from './port-rotator';
 
 @Controller()
 class FooController {
@@ -23,7 +24,7 @@ describe('E2e testing app', () => {
     it('.client can send a message to the server', async () => {
       setStartingPort(9100);
 
-      const app = await create({ imports: [ FooModule ] });
+      const app = await createTestingApp({ imports: [ FooModule ] });
       const res = await firstValueFrom(app.client.send('foo', {}));
 
       expect(res).toBe('bar');
